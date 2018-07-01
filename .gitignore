@@ -3,6 +3,7 @@
 /external-docs
 ~$*.docx
 *.tmp
+*.jar
 
 # CMake generated files
 [Bb]uild/
