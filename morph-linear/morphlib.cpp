@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 void write_int(std::ostream& stream, int value) {
 	stream.put((value >> 24) & 0xFF);
@@ -18,12 +19,13 @@ int read_int(std::istream& stream) {
 }
 
 namespace morph {
+	using namespace std;
+	using namespace morph;
+	using namespace chrono;
 	
 	BinaryImage::BinaryImage(const std::string& path) {
 		std::ifstream ifs;
 		ifs.open(path.c_str(), std::ifstream::in);
-
-		std::cout << "Open file " << path << ", " << ifs.good() << std::endl;
 
 		width = read_int(ifs);
 		height = read_int(ifs);
@@ -52,6 +54,29 @@ namespace morph {
 		ofs.write(bytes, width * height);
 
 		ofs.close();
+	}
+
+	int exec_test(int argc, char** argv, test_func* func) {
+		if (argc != 3) {
+			printf("Usage: morph <infile> <outfile>\n");
+			return -1;
+		} 
+
+		BinaryImage img(argv[1]);
+		printf("Width %d, height %d\n", img.width, img.height);
+
+		BinaryImage out(img.width, img.height, new char[img.width * img.height]);
+
+		auto start = high_resolution_clock::now();
+		func(img, out);
+		auto end = high_resolution_clock::now();
+
+		auto time_span = duration_cast<duration<double>>(end - start);
+
+		printf("Erosion operation spent %lfms.\n", time_span.count() * 1000.0);
+
+		out.write(argv[2]);
+		return 0;
 	}
 
 };

@@ -16,7 +16,7 @@ namespace morph {
 
 		void write(const std::string& path);
 
-		inline int pixel(int x, int y) {
+		inline int pixel(int x, int y) const {
 			if (x < 0 || y < 0 || x >= width || y >= height)
 				return 0;
 			return bytes[y * width + x];
@@ -26,5 +26,9 @@ namespace morph {
 			bytes[y * width + x] = c;
 		}
 	};
+
+	typedef void test_func(BinaryImage& src, BinaryImage& dst);
+
+	int exec_test(int argc, char** argv, test_func* func);
 
 };
