@@ -73,7 +73,7 @@ namespace morph {
 
 		auto time_span = duration_cast<duration<double>>(end - start);
 
-		printf("Erosion operation spent %lfms.\n", time_span.count() * 1000.0);
+		printf("Dilation operation spent %lfms.\n", time_span.count() * 1000.0);
 
 		out.write(argv[2]);
 		return 0;
