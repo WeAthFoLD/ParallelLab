@@ -62,6 +62,7 @@ namespace morph {
 			return -1;
 		} 
 
+		printf("Loading image %s\n", argv[1]);
 		BinaryImage img(argv[1]);
 		printf("Width %d, height %d\n", img.width, img.height);
 

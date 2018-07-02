@@ -38,22 +38,25 @@ void exec_root(morph::BinaryImage& src, morph::BinaryImage& dst) {
 	memset(buf								 , 0, src.width);
 	memset(buf + (1 + src.height) * src.width, 0, (1 + padded_height - src.height) * src.width);
 
-	if (world_rank == 0) {
-		srcbuf = new char[width * (2 + grid_height)];
-		memcpy(srcbuf, buf, width * (2 + grid_height));
-	}
+	srcbuf = new char[width * (2 + grid_height)];
+	memcpy(srcbuf, buf, width * (2 + grid_height));
+
+	MPI_Request requests[16];
 	for (int i = 1; i < world_size; ++i) {
 		int offset = src.width * grid_height * i;
-		MPI_Send(buf + offset, src.width * (2 + grid_height), MPI_BYTE, i, TagRecvBuf, MPI_COMM_WORLD);
+		MPI_Isend(buf + offset, src.width * (2 + grid_height), MPI_BYTE, i, TagRecvBuf, MPI_COMM_WORLD, requests + (i - 1));
 	}
 
 	rawdst = dst.bytes;
 	exec_worker();
 
+	MPI_Waitall(world_size - 1, requests, MPI_STATUSES_IGNORE);
+
 	// Gather result
 	for (int i = 1; i < world_size; ++i) {
-		MPI_Recv(dst.bytes + i * width * grid_height, width * grid_height, MPI_BYTE, i, TagResult, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+		MPI_Irecv(dst.bytes + i * width * grid_height, width * grid_height, MPI_BYTE, i, TagResult, MPI_COMM_WORLD, requests + (i - 1));
 	}
+	MPI_Waitall(world_size - 1, requests, MPI_STATUSES_IGNORE);
 }
 
 inline int sample(int x, int y) {
